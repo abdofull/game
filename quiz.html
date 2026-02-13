@@ -1,0 +1,1390 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>🎮 مسابقة الأطفال السريعة</title>
+
+    <!-- Google Fonts - Cairo for Arabic Support -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        /* ==================== CSS VARIABLES ==================== */
+        :root {
+            /* Mobile-First Color Palette - Vibrant & Playful */
+            --primary-purple: #9b59b6;
+            --primary-pink: #ff6b9d;
+            --primary-blue: #4facfe;
+            --primary-green: #43e97b;
+            --primary-orange: #ffa726;
+            --primary-red: #ff5252;
+            --primary-yellow: #ffd93d;
+
+            --bg-light: #fff5f7;
+            --card-bg: #ffffff;
+            --text-dark: #2d3436;
+            --text-light: #636e72;
+            --shadow: rgba(0, 0, 0, 0.1);
+
+            /* Responsive Font Sizes using rem */
+            --font-xl: 2.5rem;
+            --font-lg: 2rem;
+            --font-md: 1.5rem;
+            --font-sm: 1.2rem;
+            --font-xs: 1rem;
+
+            /* Touch-Friendly Spacing */
+            --spacing-xs: 0.5rem;
+            --spacing-sm: 1rem;
+            --spacing-md: 1.5rem;
+            --spacing-lg: 2rem;
+            --spacing-xl: 3rem;
+
+            /* Button Minimum Height for Touch */
+            --btn-min-height: 60px;
+        }
+
+        /* ==================== RESET & BASE STYLES ==================== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            /* Remove tap highlight on mobile */
+        }
+
+        html {
+            font-size: 16px;
+            /* Base font size for rem calculations */
+            min-height: 100%;
+            overflow-x: hidden;
+            /* Prevent horizontal scroll only */
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            /* Prevent horizontal scroll only */
+            overflow-y: auto;
+            /* Allow vertical scrolling */
+            position: relative;
+            touch-action: pan-y manipulation;
+            /* Allow vertical scrolling, disable double-tap zoom */
+        }
+
+        /* Pulsing Red Background Warning (activated when timer < 10s) */
+        body.warning {
+            animation: pulseRedBackground 1s infinite;
+        }
+
+        @keyframes pulseRedBackground {
+
+            0%,
+            100% {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            }
+
+            50% {
+                background: linear-gradient(135deg, #ff5252 0%, #ff1744 100%);
+            }
+        }
+
+        /* ==================== MAIN CONTAINER ==================== */
+        .app-container {
+            width: 100%;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow-x: hidden;
+            /* Prevent horizontal scroll */
+        }
+
+        /* ==================== SCREENS MANAGEMENT ==================== */
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: var(--spacing-lg);
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            pointer-events: none;
+            overflow-y: auto;
+            /* Allow vertical scrolling within screen */
+            overflow-x: hidden;
+            /* Prevent horizontal scroll */
+        }
+
+        .screen.active {
+            opacity: 1;
+            transform: translateX(0);
+            pointer-events: all;
+        }
+
+        .screen.exit-left {
+            transform: translateX(-100%);
+            opacity: 0;
+        }
+
+        /* ==================== START SCREEN ==================== */
+        .start-screen {
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .game-logo {
+            font-size: 5rem;
+            margin-bottom: var(--spacing-md);
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-20px);
+            }
+        }
+
+        .start-screen h1 {
+            font-size: var(--font-xl);
+            font-weight: 800;
+            color: white;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .start-screen .subtitle {
+            font-size: var(--font-sm);
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .players-section {
+            width: 100%;
+            max-width: 500px;
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .player-input-wrapper {
+            background: white;
+            border-radius: 20px;
+            padding: var(--spacing-md);
+            margin-bottom: var(--spacing-md);
+            box-shadow: 0 8px 20px var(--shadow);
+            animation: slideInUp 0.6s ease-out backwards;
+        }
+
+        .player-input-wrapper:nth-child(1) {
+            animation-delay: 0.1s;
+        }
+
+        .player-input-wrapper:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .player-input-wrapper:nth-child(3) {
+            animation-delay: 0.3s;
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .player-input-wrapper label {
+            display: block;
+            font-size: var(--font-xs);
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .player-input-wrapper input {
+            width: 100%;
+            padding: 1.2rem;
+            font-size: var(--font-sm);
+            font-family: 'Cairo', sans-serif;
+            border: 3px solid #f0f0f0;
+            border-radius: 15px;
+            background: #f8f9fa;
+            transition: all 0.3s ease;
+            min-height: var(--btn-min-height);
+        }
+
+        .player-input-wrapper input:focus {
+            outline: none;
+            border-color: var(--primary-purple);
+            background: white;
+            transform: scale(1.02);
+        }
+
+        .add-player-btn {
+            width: 100%;
+            max-width: 500px;
+            padding: 1.2rem;
+            min-height: var(--btn-min-height);
+            font-size: var(--font-sm);
+            font-weight: 700;
+            font-family: 'Cairo', sans-serif;
+            background: white;
+            color: var(--primary-purple);
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            box-shadow: 0 6px 20px var(--shadow);
+            transition: transform 0.2s ease;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .add-player-btn:active {
+            transform: scale(0.95);
+        }
+
+        .start-game-btn {
+            width: 100%;
+            max-width: 500px;
+            padding: 1.5rem;
+            min-height: 70px;
+            font-size: var(--font-md);
+            font-weight: 800;
+            font-family: 'Cairo', sans-serif;
+            background: linear-gradient(135deg, var(--primary-pink), var(--primary-orange));
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(255, 107, 157, 0.5);
+            transition: transform 0.2s ease;
+        }
+
+        .start-game-btn:active {
+            transform: scale(0.95);
+        }
+
+        .home-btn {
+            width: 100%;
+            max-width: 500px;
+            padding: 1.2rem;
+            min-height: 60px;
+            font-size: var(--font-sm);
+            font-weight: 700;
+            font-family: 'Cairo', sans-serif;
+            background: linear-gradient(135deg, var(--primary-blue), var(--primary-purple));
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            box-shadow: 0 8px 25px rgba(79, 172, 254, 0.4);
+            transition: transform 0.2s ease;
+            margin-top: var(--spacing-md);
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .home-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* ==================== GAME SCREEN ==================== */
+        .game-screen {
+            justify-content: space-between;
+        }
+
+        .game-header {
+            background: white;
+            border-radius: 20px;
+            padding: var(--spacing-md);
+            margin-bottom: var(--spacing-md);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 15px var(--shadow);
+        }
+
+        .player-info {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+        }
+
+        .player-avatar {
+            font-size: 2rem;
+        }
+
+        .player-name {
+            font-size: var(--font-sm);
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        .timer-display {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+            font-size: var(--font-lg);
+            font-weight: 800;
+            color: var(--primary-orange);
+        }
+
+        .timer-display.warning {
+            color: var(--primary-red);
+            animation: timerPulse 1s infinite;
+        }
+
+        @keyframes timerPulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.15);
+            }
+        }
+
+        .progress-section {
+            background: white;
+            border-radius: 20px;
+            padding: var(--spacing-md);
+            margin-bottom: var(--spacing-md);
+            box-shadow: 0 4px 15px var(--shadow);
+        }
+
+        .progress-text {
+            text-align: center;
+            font-size: var(--font-sm);
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .progress-bar-bg {
+            width: 100%;
+            height: 15px;
+            background: #ecf0f1;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-green), var(--primary-blue));
+            border-radius: 10px;
+            transition: width 0.5s ease;
+            width: 0%;
+        }
+
+        .question-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .question-card {
+            background: white;
+            border-radius: 25px;
+            padding: var(--spacing-xl);
+            box-shadow: 0 10px 30px var(--shadow);
+            text-align: center;
+        }
+
+        .question-emoji {
+            font-size: 5rem;
+            margin-bottom: var(--spacing-md);
+            animation: emojiFloat 3s ease-in-out infinite;
+        }
+
+        @keyframes emojiFloat {
+
+            0%,
+            100% {
+                transform: translateY(0px) rotate(0deg);
+            }
+
+            50% {
+                transform: translateY(-10px) rotate(5deg);
+            }
+        }
+
+        .question-text {
+            font-size: var(--font-lg);
+            font-weight: 700;
+            color: var(--text-dark);
+            line-height: 1.5;
+        }
+
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-md);
+        }
+
+        .option-btn {
+            width: 100%;
+            min-height: 70px;
+            padding: 1.5rem;
+            font-size: var(--font-md);
+            font-weight: 700;
+            font-family: 'Cairo', sans-serif;
+            background: white;
+            color: var(--text-dark);
+            border: 4px solid #e0e0e0;
+            border-radius: 20px;
+            cursor: pointer;
+            box-shadow: 0 6px 20px var(--shadow);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .option-btn:active {
+            transform: scale(0.95);
+        }
+
+        .option-btn.correct {
+            background: var(--primary-green);
+            color: white;
+            border-color: var(--primary-green);
+            animation: correctPulse 0.6s ease;
+        }
+
+        .option-btn.wrong {
+            background: var(--primary-red);
+            color: white;
+            border-color: var(--primary-red);
+            animation: wrongShake 0.6s ease;
+        }
+
+        @keyframes correctPulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
+        }
+
+        @keyframes wrongShake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-15px);
+            }
+
+            75% {
+                transform: translateX(15px);
+            }
+        }
+
+        /* ==================== INTERIM SCREEN ==================== */
+        .interim-screen {
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .interim-icon {
+            font-size: 6rem;
+            margin-bottom: var(--spacing-lg);
+            animation: rotateIcon 2s linear infinite;
+        }
+
+        @keyframes rotateIcon {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .interim-screen h2 {
+            font-size: var(--font-xl);
+            font-weight: 800;
+            color: white;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
+            margin-bottom: var(--spacing-md);
+        }
+
+        .next-player-display {
+            font-size: var(--font-lg);
+            font-weight: 700;
+            color: var(--primary-yellow);
+            background: rgba(255, 255, 255, 0.2);
+            padding: var(--spacing-md) var(--spacing-lg);
+            border-radius: 20px;
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .continue-btn {
+            width: 100%;
+            max-width: 400px;
+            min-height: 70px;
+            padding: 1.5rem;
+            font-size: var(--font-md);
+            font-weight: 800;
+            font-family: 'Cairo', sans-serif;
+            background: linear-gradient(135deg, var(--primary-green), var(--primary-blue));
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(67, 233, 123, 0.5);
+            transition: transform 0.2s ease;
+        }
+
+        .continue-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* ==================== LEADERBOARD SCREEN ==================== */
+        .leaderboard-screen {
+            justify-content: center;
+            align-items: center;
+        }
+
+        .leaderboard-title {
+            font-size: var(--font-xl);
+            font-weight: 800;
+            color: white;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
+            margin-bottom: var(--spacing-lg);
+            text-align: center;
+        }
+
+        .leaderboard-list {
+            width: 100%;
+            max-width: 500px;
+            list-style: none;
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .leaderboard-item {
+            background: white;
+            border-radius: 20px;
+            padding: var(--spacing-md);
+            margin-bottom: var(--spacing-md);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 6px 20px var(--shadow);
+            animation: slideInRight 0.6s ease-out backwards;
+        }
+
+        .leaderboard-item:nth-child(1) {
+            animation-delay: 0.1s;
+        }
+
+        .leaderboard-item:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .leaderboard-item:nth-child(3) {
+            animation-delay: 0.3s;
+        }
+
+        .leaderboard-item:nth-child(4) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(100px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .leaderboard-item.winner {
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
+            transform: scale(1.05);
+        }
+
+        .rank-info {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .rank-medal {
+            font-size: 2.5rem;
+        }
+
+        .player-details {
+            text-align: right;
+        }
+
+        .player-details .name {
+            font-size: var(--font-sm);
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        .player-details .stats {
+            font-size: var(--font-xs);
+            color: var(--text-light);
+            margin-top: 0.3rem;
+        }
+
+        .score-display {
+            font-size: var(--font-lg);
+            font-weight: 800;
+            color: var(--primary-purple);
+        }
+
+        .leaderboard-item.winner .score-display {
+            color: #ff6b00;
+        }
+
+        .restart-btn {
+            width: 100%;
+            max-width: 400px;
+            min-height: 70px;
+            padding: 1.5rem;
+            font-size: var(--font-md);
+            font-weight: 800;
+            font-family: 'Cairo', sans-serif;
+            background: linear-gradient(135deg, var(--primary-purple), var(--primary-pink));
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(155, 89, 182, 0.5);
+            transition: transform 0.2s ease;
+        }
+
+        .restart-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* ==================== CONFETTI ANIMATION ==================== */
+        .confetti-piece {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            animation: confettiFall 3s linear forwards;
+        }
+
+        @keyframes confettiFall {
+            to {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
+        /* ==================== RESPONSIVE ADJUSTMENTS ==================== */
+        @media (max-width: 380px) {
+            :root {
+                --font-xl: 2rem;
+                --font-lg: 1.6rem;
+                --font-md: 1.3rem;
+                --font-sm: 1.1rem;
+                --font-xs: 0.9rem;
+            }
+
+            .question-emoji {
+                font-size: 4rem;
+            }
+        }
+
+        @media (min-width: 768px) {
+            .app-container {
+                max-width: 600px;
+                margin: 0 auto;
+                border-radius: 30px;
+                overflow: hidden;
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- ==================== START SCREEN ==================== -->
+        <div class="screen active" id="startScreen">
+            <div class="game-logo">🎮</div>
+            <h1>مسابقة الأطفال السريعة</h1>
+            <p class="subtitle">جاوب على 10 أسئلة في 60 ثانية! 🚀</p>
+
+            <div class="players-section" id="playersSection">
+                <div class="player-input-wrapper">
+                    <label>🧒 اللاعب الأول</label>
+                    <input type="text" class="player-input" placeholder="اكتب اسمك هنا" required>
+                </div>
+                <div class="player-input-wrapper">
+                    <label>👧 اللاعب الثاني</label>
+                    <input type="text" class="player-input" placeholder="اكتب اسمك هنا" required>
+                </div>
+            </div>
+
+            <button class="add-player-btn" onclick="addPlayer()">
+                ➕ أضف لاعب آخر
+            </button>
+
+            <button class="start-game-btn" onclick="startGame()">
+                🎯 ابدأ اللعب الآن!
+            </button>
+
+            <a href="index.html" class="home-btn">🏠 العودة للرئيسية</a>
+        </div>
+
+        <!-- ==================== GAME SCREEN ==================== -->
+        <div class="screen" id="gameScreen">
+            <div class="game-header">
+                <div class="player-info">
+                    <span class="player-avatar">👤</span>
+                    <span class="player-name" id="currentPlayer"></span>
+                </div>
+                <div class="timer-display" id="timerDisplay">
+                    <span>⏰</span>
+                    <span id="timerValue">60</span>
+                </div>
+            </div>
+
+            <div class="progress-section">
+                <div class="progress-text">السؤال <span id="questionNumber">1</span> من 10</div>
+                <div class="progress-bar-bg">
+                    <div class="progress-bar-fill" id="progressBar"></div>
+                </div>
+            </div>
+
+            <div class="question-container">
+                <div class="question-card">
+                    <div class="question-emoji" id="questionEmoji">❓</div>
+                    <h2 class="question-text" id="questionText"></h2>
+                </div>
+            </div>
+
+            <div class="options-container" id="optionsContainer">
+                <!-- Options will be inserted here dynamically -->
+            </div>
+        </div>
+
+        <!-- ==================== INTERIM SCREEN ==================== -->
+        <div class="screen" id="interimScreen">
+            <div class="interim-icon">🔄</div>
+            <h2>انتهى دورك! 🎉</h2>
+            <div class="next-player-display" id="nextPlayerName"></div>
+            <button class="continue-btn" onclick="continueGame()">
+                ⬅️ التالي
+            </button>
+        </div>
+
+        <!-- ==================== LEADERBOARD SCREEN ==================== -->
+        <div class="screen" id="leaderboardScreen">
+            <h2 class="leaderboard-title">🏆 الفائزون 🏆</h2>
+            <ul class="leaderboard-list" id="leaderboardList">
+                <!-- Leaderboard items will be inserted here -->
+            </ul>
+            <button class="restart-btn" onclick="restartGame()">
+                🔄 العب مرة أخرى
+            </button>
+        </div>
+    </div>
+
+    <script>
+        /* ==================== GAME CONSTANTS & DATA ==================== */
+
+        /**
+         * QUESTIONS DATABASE - Very Easy Questions for Kids with Emojis
+         * Each question has only 2 options to simplify for children
+         */
+        const QUESTIONS_POOL = [
+            // Animals
+            { emoji: "🐱", text: "ما هو صوت القطة؟", options: ["مواء", "نباح"], correct: 0 },
+            { emoji: "🐶", text: "ما هو صوت الكلب؟", options: ["نباح", "مواء"], correct: 0 },
+            { emoji: "🐄", text: "ما الذي تعطينا البقرة؟", options: ["حليب", "بيض"], correct: 0 },
+            { emoji: "🐓", text: "ما الذي تعطينا الدجاجة؟", options: ["صوف", "بيض"], correct: 1 },
+            { emoji: "🐑", text: "ما الذي نحصل عليه من الخروف؟", options: ["صوف", "حليب"], correct: 0 },
+            { emoji: "🐘", text: "أيهما أكبر؟", options: ["فيل", "فأر"], correct: 0 },
+            { emoji: "🐭", text: "أيهما أصغر؟", options: ["فأر", "جمل"], correct: 0 },
+            { emoji: "🦁", text: "أين يعيش الأسد؟", options: ["غابة", "بحر"], correct: 0 },
+            { emoji: "🐠", text: "أين تعيش السمكة؟", options: ["شجرة", "ماء"], correct: 1 },
+            { emoji: "🦅", text: "كيف يتحرك الطائر؟", options: ["يطير", "يسبح"], correct: 0 },
+
+            // Colors & Shapes
+            { emoji: "🔴", text: "ما هو لون التفاحة؟", options: ["أحمر", "أزرق"], correct: 0 },
+            { emoji: "🌞", text: "ما هو لون الشمس؟", options: ["أصفر", "أخضر"], correct: 0 },
+            { emoji: "🌊", text: "ما هو لون البحر؟", options: ["أزرق", "أحمر"], correct: 0 },
+            { emoji: "🌳", text: "ما هو لون أوراق الشجر؟", options: ["أخضر", "برتقالي"], correct: 0 },
+            { emoji: "⚫", text: "ما هو شكل الكرة؟", options: ["دائري", "مربع"], correct: 0 },
+            { emoji: "⭐", text: "كم عدد رؤوس النجمة؟", options: ["خمسة", "ثلاثة"], correct: 0 },
+
+            // Numbers
+            { emoji: "🔢", text: "ما العدد الذي بعد 1؟", options: ["2", "5"], correct: 0 },
+            { emoji: "🔢", text: "ما العدد الذي قبل 10؟", options: ["9", "11"], correct: 0 },
+            { emoji: "✋", text: "كم عدد أصابع اليد؟", options: ["5", "10"], correct: 0 },
+            { emoji: "👣", text: "كم عدد أرجل الإنسان؟", options: ["2", "4"], correct: 0 },
+
+            // Food & Fruits
+            { emoji: "🍎", text: "ما اسم هذه الفاكهة؟", options: ["تفاح", "برتقال"], correct: 0 },
+            { emoji: "🍌", text: "ما اسم هذه الفاكهة؟", options: ["موز", "عنب"], correct: 0 },
+            { emoji: "🍉", text: "ما لون البطيخ من الداخل؟", options: ["أحمر", "أصفر"], correct: 0 },
+            { emoji: "🥛", text: "ما هو لون الحليب؟", options: ["أبيض", "أسود"], correct: 0 },
+            { emoji: "🍕", text: "ما شكل البيتزا؟", options: ["دائري", "مثلث"], correct: 0 },
+
+            // Nature & Time
+            { emoji: "🌙", text: "متى نرى القمر؟", options: ["ليلاً", "نهاراً"], correct: 0 },
+            { emoji: "☀️", text: "متى تشرق الشمس؟", options: ["صباحاً", "مساءً"], correct: 0 },
+            { emoji: "⭐", text: "متى نرى النجوم؟", options: ["ليلاً", "ظهراً"], correct: 0 },
+            { emoji: "🌧️", text: "ماذا ينزل عندما تمطر؟", options: ["ماء", "رمل"], correct: 0 },
+            { emoji: "❄️", text: "ماذا ينزل في الشتاء البارد؟", options: ["ثلج", "رمل"], correct: 0 },
+
+            // Body Parts
+            { emoji: "👀", text: "بماذا نرى؟", options: ["عيون", "أذن"], correct: 0 },
+            { emoji: "👂", text: "بماذا نسمع؟", options: ["أذن", "أنف"], correct: 0 },
+            { emoji: "👃", text: "بماذا نشم الرائحة؟", options: ["أنف", "فم"], correct: 0 },
+            { emoji: "👄", text: "بماذا نتكلم؟", options: ["فم", "أنف"], correct: 0 },
+            { emoji: "👐", text: "بماذا نمسك الأشياء؟", options: ["يد", "رجل"], correct: 0 },
+
+            // Daily Life
+            { emoji: "🏫", text: "أين يذهب الأطفال للتعلم؟", options: ["مدرسة", "مستشفى"], correct: 0 },
+            { emoji: "🏥", text: "أين نذهب عندما نمرض؟", options: ["مستشفى", "سوق"], correct: 0 },
+            { emoji: "🚗", text: "ماذا نستخدم للسفر؟", options: ["سيارة", "كتاب"], correct: 0 },
+            { emoji: "✏️", text: "بماذا نكتب؟", options: ["قلم", "مقص"], correct: 0 },
+            { emoji: "📚", text: "من أين نقرأ القصص؟", options: ["كتاب", "طبق"], correct: 0 }
+        ];
+
+        /* ==================== SOUND EFFECTS ==================== */
+
+        /**
+         * Sound Effects using Web Audio API
+         * Creating simple beep sounds for game events
+         */
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        const audioCtx = new AudioContext();
+
+        // Play a positive sound (correct answer)
+        function playCorrectSound() {
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            oscillator.frequency.value = 800;
+            oscillator.type = 'sine';
+
+            gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+
+            oscillator.start(audioCtx.currentTime);
+            oscillator.stop(audioCtx.currentTime + 0.3);
+        }
+
+        // Play a negative sound (wrong answer)
+        function playWrongSound() {
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            oscillator.frequency.value = 200;
+            oscillator.type = 'sawtooth';
+
+            gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+
+            oscillator.start(audioCtx.currentTime);
+            oscillator.stop(audioCtx.currentTime + 0.4);
+        }
+
+        // Play game start sound
+        function playStartSound() {
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            oscillator.frequency.value = 523.25; // C5
+            oscillator.type = 'square';
+
+            gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+
+            oscillator.start(audioCtx.currentTime);
+            oscillator.stop(audioCtx.currentTime + 0.2);
+
+            // Second note
+            setTimeout(() => {
+                const osc2 = audioCtx.createOscillator();
+                const gain2 = audioCtx.createGain();
+                osc2.connect(gain2);
+                gain2.connect(audioCtx.destination);
+                osc2.frequency.value = 659.25; // E5
+                osc2.type = 'square';
+                gain2.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                gain2.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                osc2.start(audioCtx.currentTime);
+                osc2.stop(audioCtx.currentTime + 0.3);
+            }, 150);
+        }
+
+        // Play game end celebration sound
+        function playEndSound() {
+            const notes = [523.25, 659.25, 783.99, 1046.50]; // C-E-G-C (C Major chord)
+            notes.forEach((freq, index) => {
+                setTimeout(() => {
+                    const oscillator = audioCtx.createOscillator();
+                    const gainNode = audioCtx.createGain();
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioCtx.destination);
+                    oscillator.frequency.value = freq;
+                    oscillator.type = 'sine';
+                    gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+                    oscillator.start(audioCtx.currentTime);
+                    oscillator.stop(audioCtx.currentTime + 0.5);
+                }, index * 100);
+            });
+        }
+
+        /**
+         * TIMER TICK SOUND
+         * Plays a ticking sound when timer is below 10 seconds
+         */
+        let tickInterval = null;
+
+        function startTickSound() {
+            if (tickInterval) return; // Already ticking
+
+            tickInterval = setInterval(() => {
+                const oscillator = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+
+                oscillator.frequency.value = 1000;
+                oscillator.type = 'sine';
+
+                gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05);
+
+                oscillator.start(audioCtx.currentTime);
+                oscillator.stop(audioCtx.currentTime + 0.05);
+            }, 1000); // Tick every second
+        }
+
+        function stopTickSound() {
+            if (tickInterval) {
+                clearInterval(tickInterval);
+                tickInterval = null;
+            }
+        }
+
+        /* ==================== GAME STATE ==================== */
+
+        let players = [];
+        let currentPlayerIndex = 0;
+        let currentQuestionIndex = 0;
+        let playerQuestions = [];
+        let timerValue = 60;
+        let timerInterval = null;
+        let correctAnswersCount = 0;
+
+        /* ==================== HELPER FUNCTIONS ==================== */
+
+        /**
+         * Switch between screens with smooth transitions
+         */
+        function switchScreen(fromId, toId) {
+            const fromScreen = document.getElementById(fromId);
+            const toScreen = document.getElementById(toId);
+
+            if (fromScreen) {
+                fromScreen.classList.add('exit-left');
+                setTimeout(() => {
+                    fromScreen.classList.remove('active', 'exit-left');
+                }, 500);
+            }
+
+            if (toScreen) {
+                toScreen.classList.add('active');
+            }
+        }
+
+        /**
+         * Shuffle array using Fisher-Yates algorithm
+         */
+        function shuffleArray(array) {
+            const shuffled = [...array];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
+
+        /**
+         * Select 10 random questions for a player
+         */
+        function getPlayerQuestions() {
+            return shuffleArray(QUESTIONS_POOL).slice(0, 10);
+        }
+
+        /* ==================== START SCREEN FUNCTIONS ==================== */
+
+        /**
+         * Add a new player input field
+         */
+        function addPlayer() {
+            const playersSection = document.getElementById('playersSection');
+            const playerCount = playersSection.querySelectorAll('.player-input-wrapper').length + 1;
+
+            const wrapper = document.createElement('div');
+            wrapper.className = 'player-input-wrapper';
+            wrapper.innerHTML = `
+                <label>👤 اللاعب ${playerCount}</label>
+                <input type="text" class="player-input" placeholder="اكتب اسمك هنا" required>
+            `;
+
+            playersSection.appendChild(wrapper);
+        }
+
+        /**
+         * Start the game
+         * Collect player names and initialize first turn
+         */
+        function startGame() {
+            const inputs = document.querySelectorAll('.player-input');
+            players = [];
+
+            inputs.forEach(input => {
+                const name = input.value.trim();
+                if (name) {
+                    players.push({
+                        name: name,
+                        score: 0,
+                        correctAnswers: 0,
+                        timeBonus: 0
+                    });
+                }
+            });
+
+            if (players.length < 2) {
+                alert('⚠️ يجب إضافة لاعبين على الأقل!');
+                return;
+            }
+
+            // Play start sound
+            playStartSound();
+
+            // Initialize first player
+            currentPlayerIndex = 0;
+            startPlayerTurn();
+        }
+
+        /* ==================== GAME SCREEN FUNCTIONS ==================== */
+
+        /**
+         * Start a player's turn
+         * Reset state and display first question
+         */
+        function startPlayerTurn() {
+            // Reset player state
+            currentQuestionIndex = 0;
+            correctAnswersCount = 0;
+            timerValue = 60;
+            playerQuestions = getPlayerQuestions();
+
+            // Switch to game screen
+            switchScreen('startScreen', 'gameScreen');
+            switchScreen('interimScreen', 'gameScreen');
+
+            // Update UI
+            document.getElementById('currentPlayer').textContent = players[currentPlayerIndex].name;
+            document.getElementById('timerValue').textContent = timerValue;
+
+            // Display first question
+            displayQuestion();
+
+            // Start timer
+            startTimer();
+        }
+
+        /**
+         * Display the current question
+         */
+        function displayQuestion() {
+            const question = playerQuestions[currentQuestionIndex];
+
+            // Update progress
+            const progress = ((currentQuestionIndex + 1) / 10) * 100;
+            document.getElementById('questionNumber').textContent = currentQuestionIndex + 1;
+            document.getElementById('progressBar').style.width = progress + '%';
+
+            // Update question content
+            document.getElementById('questionEmoji').textContent = question.emoji;
+            document.getElementById('questionText').textContent = question.text;
+
+            // Create option buttons
+            const optionsContainer = document.getElementById('optionsContainer');
+            optionsContainer.innerHTML = '';
+
+            question.options.forEach((option, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.textContent = option;
+                btn.onclick = () => selectAnswer(index);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        /**
+         * Handle answer selection
+         */
+        function selectAnswer(selectedIndex) {
+            const question = playerQuestions[currentQuestionIndex];
+            const buttons = document.querySelectorAll('.option-btn');
+            const isCorrect = selectedIndex === question.correct;
+
+            // Disable all buttons
+            buttons.forEach(btn => btn.style.pointerEvents = 'none');
+
+            // Visual and audio feedback
+            if (isCorrect) {
+                buttons[selectedIndex].classList.add('correct');
+                buttons[selectedIndex].innerHTML = '✓ ' + buttons[selectedIndex].textContent;
+                correctAnswersCount++;
+                playCorrectSound();
+            } else {
+                buttons[selectedIndex].classList.add('wrong');
+                buttons[selectedIndex].innerHTML = '✗ ' + buttons[selectedIndex].textContent;
+                buttons[question.correct].classList.add('correct');
+                buttons[question.correct].innerHTML = '✓ ' + buttons[question.correct].textContent;
+                playWrongSound();
+            }
+
+            // Move to next question after delay
+            setTimeout(() => {
+                currentQuestionIndex++;
+                if (currentQuestionIndex < 10) {
+                    displayQuestion();
+                } else {
+                    endPlayerTurn();
+                }
+            }, 1500);
+        }
+
+        /**
+         * TIMER MANAGEMENT
+         * Handles the 60-second countdown with warning effects
+         */
+        function startTimer() {
+            const timerDisplay = document.getElementById('timerDisplay');
+            const timerValueSpan = document.getElementById('timerValue');
+
+            timerInterval = setInterval(() => {
+                timerValue--;
+                timerValueSpan.textContent = timerValue;
+
+                // Warning state when timer < 10 seconds
+                if (timerValue === 10) {
+                    timerDisplay.classList.add('warning');
+                    document.body.classList.add('warning'); // Pulsing red background
+                    startTickSound(); // Start ticking sound
+                }
+
+                // Time's up!
+                if (timerValue <= 0) {
+                    stopTimer();
+                    endPlayerTurn();
+                }
+            }, 1000);
+        }
+
+        function stopTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+
+            // Remove warning effects
+            document.getElementById('timerDisplay').classList.remove('warning');
+            document.body.classList.remove('warning');
+            stopTickSound();
+        }
+
+        /**
+         * End the current player's turn
+         * Calculate score and move to next player or leaderboard
+         */
+        function endPlayerTurn() {
+            stopTimer();
+
+            // Calculate score
+            const baseScore = correctAnswersCount * 10; // 10 points per correct answer
+            const timeBonus = timerValue > 0 ? timerValue * 2 : 0; // 2 points per remaining second
+            const totalScore = baseScore + timeBonus;
+
+            // Update player data
+            players[currentPlayerIndex].score = totalScore;
+            players[currentPlayerIndex].correctAnswers = correctAnswersCount;
+            players[currentPlayerIndex].timeBonus = timeBonus;
+
+            // Check if more players
+            if (currentPlayerIndex < players.length - 1) {
+                // Show interim screen
+                currentPlayerIndex++;
+                document.getElementById('nextPlayerName').textContent = '👉 ' + players[currentPlayerIndex].name;
+                switchScreen('gameScreen', 'interimScreen');
+            } else {
+                // Show leaderboard
+                showLeaderboard();
+            }
+        }
+
+        /* ==================== INTERIM SCREEN FUNCTIONS ==================== */
+
+        /**
+         * Continue to next player's turn
+         */
+        function continueGame() {
+            playStartSound();
+            startPlayerTurn();
+        }
+
+        /* ==================== LEADERBOARD SCREEN FUNCTIONS ==================== */
+
+        /**
+         * Display final leaderboard with rankings
+         */
+        function showLeaderboard() {
+            // Play end game celebration sound
+            playEndSound();
+
+            // Sort players by score (descending)
+            const sortedPlayers = [...players].sort((a, b) => b.score - a.score);
+
+            // Display leaderboard
+            const leaderboardList = document.getElementById('leaderboardList');
+            leaderboardList.innerHTML = '';
+
+            const medals = ['🥇', '🥈', '🥉'];
+
+            sortedPlayers.forEach((player, index) => {
+                const li = document.createElement('li');
+                li.className = 'leaderboard-item' + (index === 0 ? ' winner' : '');
+
+                li.innerHTML = `
+                    <div class="rank-info">
+                        <span class="rank-medal">${medals[index] || '🏅'}</span>
+                        <div class="player-details">
+                            <div class="name">${player.name}</div>
+                            <div class="stats">✓ ${player.correctAnswers}/10 | ⏱️ +${player.timeBonus}</div>
+                        </div>
+                    </div>
+                    <div class="score-display">${player.score}</div>
+                `;
+
+                leaderboardList.appendChild(li);
+            });
+
+            // Switch to leaderboard screen
+            switchScreen('gameScreen', 'leaderboardScreen');
+
+            // Create confetti for winner
+            createConfetti();
+        }
+
+        /**
+         * Create confetti animation
+         */
+        function createConfetti() {
+            const colors = ['#ff6b9d', '#4facfe', '#43e97b', '#ffa726', '#ffd93d', '#9b59b6'];
+
+            for (let i = 0; i < 100; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti-piece';
+                    confetti.style.left = Math.random() * 100 + '%';
+                    confetti.style.top = '-10px';
+                    confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.animationDelay = Math.random() * 2 + 's';
+                    document.body.appendChild(confetti);
+
+                    setTimeout(() => confetti.remove(), 3000);
+                }, i * 30);
+            }
+        }
+
+        /* ==================== RESTART GAME ==================== */
+
+        /**
+         * Restart the entire game
+         */
+        function restartGame() {
+            // Reset all state
+            players = [];
+            currentPlayerIndex = 0;
+            currentQuestionIndex = 0;
+            playerQuestions = [];
+            timerValue = 60;
+            correctAnswersCount = 0;
+
+            // Clear player inputs
+            const playersSection = document.getElementById('playersSection');
+            playersSection.innerHTML = `
+                <div class="player-input-wrapper">
+                    <label>🧒 اللاعب الأول</label>
+                    <input type="text" class="player-input" placeholder="اكتب اسمك هنا" required>
+                </div>
+                <div class="player-input-wrapper">
+                    <label>👧 اللاعب الثاني</label>
+                    <input type="text" class="player-input" placeholder="اكتب اسمك هنا" required>
+                </div>
+            `;
+
+            // Switch back to start screen
+            switchScreen('leaderboardScreen', 'startScreen');
+        }
+    </script>
+</body>
+
+</html>
