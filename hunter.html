@@ -1279,7 +1279,10 @@
 
                 var data = { el: el, x: x, y: y, dx: (Math.random() - 0.5) * 2 * speed, dy: (Math.random() - 0.5) * 2 * speed };
                 el.addEventListener('click', onEmojiClick);
-                el.addEventListener('touchstart', function (e) { e.preventDefault(); }, { passive: false });
+                el.addEventListener('touchend', function (e) {
+                    e.preventDefault();
+                    onEmojiClick(e);
+                }, { passive: false });
                 $gameArena.appendChild(el);
                 G.emojis.push(data);
             }
@@ -1354,7 +1357,10 @@
 
             var data = { el: el, x: x, y: y, dx: (Math.random() - 0.5) * 2 * speed, dy: (Math.random() - 0.5) * 2 * speed };
             el.addEventListener('click', onEmojiClick);
-            el.addEventListener('touchstart', function (e) { e.preventDefault(); }, { passive: false });
+            el.addEventListener('touchend', function (e) {
+                e.preventDefault();
+                onEmojiClick(e);
+            }, { passive: false });
             $gameArena.appendChild(el);
             G.emojis.push(data);
             requestAnimationFrame(function () { el.style.opacity = '1'; });
