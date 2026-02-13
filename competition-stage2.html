@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>🎯 صيد الرموز - المرحلة الثانية</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@400;700;800&family=Rubik+Bubbles&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0e27;
+            --bg-secondary: #131842;
+            --accent-hot: #ff2d75;
+            --accent-gold: #ffd700;
+            --accent-cyan: #00e5ff;
+            --accent-lime: #76ff03;
+            --accent-orange: #ff9100;
+            --text-primary: #f0f0ff;
+            --text-muted: #8888bb;
+            --danger: #ff1744;
+            --glass: rgba(255, 255, 255, 0.06);
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-user-select: none;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html,
+        body {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            font-family: 'Baloo Bhaijaan 2', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            touch-action: manipulation;
+        }
+
+        /* خلفية متحركة */
+        .bg-pattern {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .bg-pattern::before {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            top: -50%;
+            left: -50%;
+            background:
+                radial-gradient(ellipse at 20% 50%, rgba(255, 45, 117, 0.12) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 20%, rgba(0, 229, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 80%, rgba(118, 255, 3, 0.08) 0%, transparent 50%);
+            animation: bgFloat 20s ease-in-out infinite;
+        }
+
+        @keyframes bgFloat {
+
+            0%,
+            100% {
+                transform: translate(0, 0) rotate(0deg)
+            }
+
+            33% {
+                transform: translate(-2%, 1%) rotate(1deg)
+            }
+
+            66% {
+                transform: translate(1%, -1%) rotate(-1deg)
+            }
+        }
+
+        .screen {
+            display: none;
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            z-index: 1;
+        }
+
+        .screen.active {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* شاشة الجاهزية */
+        .ready-screen {
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: clamp(20px, 5vw, 40px);
+        }
+
+        .ready-content {
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border: 2px solid var(--glass-border);
+            border-radius: clamp(20px, 4vw, 30px);
+            padding: clamp(30px, 6vw, 50px);
+            max-width: 600px;
+            width: 90%;
+        }
+
+        .ready-emoji {
+            font-size: clamp(5rem, 18vw, 8rem);
+            animation: bounce 1.5s infinite;
+        }
+
+        @keyframes bounce {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-20px);
+            }
+        }
+
+        .ready-title {
+            color: var(--accent-gold);
+            font-size: clamp(2rem, 7vw, 3rem);
+            font-weight: 900;
+            margin: clamp(20px, 4vw, 30px) 0 clamp(15px, 3vw, 20px);
+            text-shadow: 0 0 40px rgba(255, 215, 0, 0.4);
+        }
+
+        .ready-subtitle {
+            color: var(--text-muted);
+            font-size: clamp(1.1rem, 4vw, 1.5rem);
+            margin-bottom: clamp(10px, 2vw, 15px);
+        }
+
+        .ready-instructions {
+            background: rgba(0, 229, 255, 0.1);
+            border: 1px solid rgba(0, 229, 255, 0.3);
+            border-radius: 15px;
+            padding: clamp(15px, 3vw, 20px);
+            margin: clamp(20px, 4vw, 30px) 0;
+            color: var(--accent-cyan);
+            font-size: clamp(1rem, 3.5vw, 1.2rem);
+            line-height: 1.6;
+        }
+
+        .start-btn {
+            width: 100%;
+            padding: clamp(18px, 4vw, 25px);
+            font-size: clamp(1.4rem, 5vw, 2rem);
+            font-weight: 900;
+            font-family: 'Baloo Bhaijaan 2', sans-serif;
+            background: linear-gradient(135deg, var(--accent-hot), #ff6b35);
+            color: #fff;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 8px 30px rgba(255, 45, 117, 0.4);
+            transition: transform 0.2s ease;
+            animation: pulse 1.5s infinite;
+            min-height: 60px;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        .start-btn:active {
+            transform: scale(0.95);
+            animation: none;
+        }
+
+        /* شاشة اللعب */
+        .game-screen {
+            padding: 0;
+        }
+
+        .game-hud {
+            padding: clamp(12px, 3vw, 18px) clamp(15px, 4vw, 25px);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(10px);
+            border-bottom: 2px solid var(--glass-border);
+        }
+
+        .hud-player {
+            font-size: clamp(0.9rem, 3vw, 1.2rem);
+            font-weight: 700;
+            color: var(--accent-gold);
+            display: flex;
+            align-items: center;
+            gap: clamp(8px, 2vw, 12px);
+        }
+
+        .hud-player .player-emoji {
+            font-size: clamp(2rem, 6vw, 2.5rem);
+        }
+
+        .hud-timer {
+            font-family: 'Rubik Bubbles', cursive;
+            font-size: clamp(2.5rem, 8vw, 3.5rem);
+            color: var(--accent-cyan);
+            min-width: clamp(80px, 20vw, 120px);
+            text-align: center;
+        }
+
+        .hud-timer.danger {
+            color: var(--danger);
+            animation: timerShake 0.3s infinite;
+        }
+
+        @keyframes timerShake {
+
+            0%,
+            100% {
+                transform: translateX(0)
+            }
+
+            50% {
+                transform: translateX(-5px)
+            }
+        }
+
+        .hud-score {
+            font-size: clamp(1.5rem, 5vw, 2rem);
+            font-weight: 800;
+            color: var(--accent-lime);
+        }
+
+        .target-bar {
+            background: rgba(0, 0, 0, 0.3);
+            padding: clamp(12px, 3vw, 15px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: clamp(10px, 2vw, 15px);
+        }
+
+        .target-label {
+            color: var(--text-muted);
+            font-size: clamp(1rem, 3.5vw, 1.3rem);
+        }
+
+        .target-emoji {
+            font-size: clamp(3rem, 10vw, 4rem);
+            animation: targetPulse 1.5s infinite;
+        }
+
+        @keyframes targetPulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.2);
+            }
+        }
+
+        .game-arena {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .emoji-item {
+            position: absolute;
+            font-size: clamp(2.5rem, 8vw, 3.5rem);
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+
+        .emoji-item:active {
+            transform: scale(0.8);
+        }
+
+        .score-pop {
+            position: absolute;
+            font-size: clamp(2rem, 6vw, 2.5rem);
+            font-weight: 800;
+            pointer-events: none;
+            animation: scorePop 0.8s ease-out forwards;
+        }
+
+        .score-pop.correct {
+            color: var(--accent-lime);
+        }
+
+        .score-pop.wrong {
+            color: var(--danger);
+        }
+
+        @keyframes scorePop {
+            0% {
+                transform: translateY(0) scale(0.5);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateY(-100px) scale(1.2);
+                opacity: 0;
+            }
+        }
+
+        /* شاشة النتائج */
+        .results-screen {
+            align-items: center;
+            justify-content: center;
+            padding: clamp(20px, 4vw, 40px);
+        }
+
+        .results-content {
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border: 2px solid var(--glass-border);
+            border-radius: clamp(20px, 4vw, 30px);
+            padding: clamp(30px, 6vw, 50px);
+            max-width: 800px;
+            width: 100%;
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+
+        .results-title {
+            color: white;
+            font-size: clamp(2rem, 6vw, 2.5rem);
+            font-weight: 900;
+            text-align: center;
+            margin-bottom: clamp(25px, 5vw, 40px);
+            text-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .player-result {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--glass-border);
+            border-radius: 15px;
+            padding: clamp(15px, 3vw, 20px);
+            margin-bottom: clamp(12px, 2.5vw, 15px);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .player-result.qualified {
+            background: linear-gradient(135deg, rgba(67, 233, 123, 0.3), rgba(56, 249, 215, 0.3));
+            border-color: var(--accent-lime);
+            transform: scale(1.02);
+            box-shadow: 0 8px 25px rgba(67, 233, 123, 0.3);
+        }
+
+        .player-result.eliminated {
+            opacity: 0.5;
+        }
+
+        .player-result-left {
+            display: flex;
+            align-items: center;
+            gap: clamp(12px, 3vw, 20px);
+        }
+
+        .player-result .p-emoji {
+            font-size: clamp(2rem, 6vw, 3rem);
+        }
+
+        .player-result .p-name {
+            font-size: clamp(1.1rem, 3.5vw, 1.5rem);
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .player-result .p-score {
+            font-size: clamp(1.3rem, 4vw, 1.8rem);
+            font-weight: 900;
+            color: var(--accent-cyan);
+        }
+
+        .qualified-badge {
+            background: var(--accent-gold);
+            color: #0a0e27;
+            padding: clamp(6px, 1.5vw, 8px) clamp(12px, 3vw, 16px);
+            border-radius: 10px;
+            font-size: clamp(0.9rem, 3vw, 1.1rem);
+            font-weight: 800;
+            margin-left: clamp(8px, 2vw, 10px);
+        }
+
+        .next-stage-btn {
+            width: 100%;
+            padding: clamp(18px, 4vw, 25px);
+            font-size: clamp(1.3rem, 4.5vw, 1.8rem);
+            font-weight: 900;
+            font-family: 'Baloo Bhaijaan 2', sans-serif;
+            background: linear-gradient(135deg, var(--accent-hot), var(--accent-orange));
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 15px 40px rgba(255, 45, 117, 0.5);
+            margin-top: clamp(20px, 4vw, 30px);
+            min-height: 60px;
+        }
+
+        .next-stage-btn:active {
+            transform: scale(0.95);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="bg-pattern"></div>
+
+    <!-- شاشة الجاهزية -->
+    <div class="screen active ready-screen" id="readyScreen">
+        <div class="ready-content">
+            <div class="ready-emoji" id="readyEmoji">👦</div>
+            <h1 class="ready-title" id="readyPlayerName">محمد</h1>
+            <p class="ready-subtitle">المرحلة الثانية: صيد الرموز 🎯</p>
+            <div class="ready-instructions">
+                لديك <strong>30 ثانية</strong> لصيد أكبر عدد من الرموز المطلوبة!<br>
+                كل رمز صحيح = <strong>5 نقاط</strong> ⭐
+            </div>
+            <button class="start-btn" onclick="startPlayerTurn()">🔥 ابدأ الآن!</button>
+        </div>
+    </div>
+
+    <!-- شاشة اللعب -->
+    <div class="screen game-screen" id="gameScreen">
+        <div class="game-hud">
+            <div class="hud-player">
+                <span class="player-emoji" id="hudEmoji">👦</span>
+                <span id="hudName">محمد</span>
+            </div>
+            <div class="hud-timer" id="timer">30</div>
+            <div class="hud-score">
+                <span id="score">0</span> 🎯
+            </div>
+        </div>
+
+        <div class="target-bar">
+            <span class="target-label">🎯 الهدف:</span>
+            <span class="target-emoji" id="targetEmoji">🍎</span>
+        </div>
+
+        <div class="game-arena" id="arena">
+            <!-- الرموز ستظهر هنا -->
+        </div>
+    </div>
+
+    <!-- شاشة النتائج -->
+    <div class="screen results-screen" id="resultsScreen">
+        <div class="results-content">
+            <h1 class="results-title">🏆 نتائج المرحلة الثانية</h1>
+            <div id="resultsList"></div>
+            <button class="next-stage-btn" onclick="goToFinalStage()">
+                🃏 انتقل للمرحلة النهائية: لعبة الذاكرة
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // ── Audio Engine ──
+        var AudioEngine = (function () {
+            var ctx = null;
+            function getCtx() {
+                if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
+                if (ctx.state === 'suspended') ctx.resume();
+                return ctx;
+            }
+            function playTone(freq, dur, type, vol, ramp) {
+                try {
+                    var c = getCtx();
+                    var osc = c.createOscillator();
+                    var gain = c.createGain();
+                    osc.type = type || 'sine';
+                    osc.frequency.setValueAtTime(freq, c.currentTime);
+                    if (ramp) osc.frequency.linearRampToValueAtTime(ramp, c.currentTime + dur);
+                    gain.gain.setValueAtTime(vol || 0.3, c.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, c.currentTime + dur);
+                    osc.connect(gain); gain.connect(c.destination);
+                    osc.start(c.currentTime); osc.stop(c.currentTime + dur);
+                } catch (e) { /* silent */ }
+            }
+            function playNoise(dur, vol) {
+                try {
+                    var c = getCtx();
+                    var sz = c.sampleRate * dur;
+                    var buf = c.createBuffer(1, sz, c.sampleRate);
+                    var d = buf.getChannelData(0);
+                    for (var i = 0; i < sz; i++) d[i] = (Math.random() * 2 - 1) * 0.5;
+                    var src = c.createBufferSource(); src.buffer = buf;
+                    var gain = c.createGain();
+                    gain.gain.setValueAtTime(vol || 0.15, c.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, c.currentTime + dur);
+                    var flt = c.createBiquadFilter(); flt.type = 'highpass';
+                    flt.frequency.setValueAtTime(3000, c.currentTime);
+                    src.connect(flt); flt.connect(gain); gain.connect(c.destination); src.start();
+                } catch (e) { /* silent */ }
+            }
+            return {
+                correct: function () {
+                    playTone(523, 0.12, 'sine', 0.25);
+                    setTimeout(function () { playTone(659, 0.12, 'sine', 0.25); }, 80);
+                    setTimeout(function () { playTone(784, 0.18, 'sine', 0.3); }, 160);
+                },
+                wrong: function () {
+                    playTone(200, 0.25, 'sawtooth', 0.15);
+                    playNoise(0.12, 0.1);
+                },
+                timeUp: function () {
+                    playTone(440, 0.15, 'square', 0.2);
+                    setTimeout(function () { playTone(349, 0.15, 'square', 0.2); }, 150);
+                    setTimeout(function () { playTone(262, 0.4, 'square', 0.25); }, 300);
+                },
+                click: function () { playTone(880, 0.1, 'sine', 0.2); }
+            };
+        })();
+
+        // تحميل بيانات اللاعبين
+        let players = JSON.parse(localStorage.getItem('competitionPlayers') || '[]');
+        let currentPlayerIndex = 0;
+        let gameTime = 30;
+        let gameTimer = null;
+        let spawnTimer = null;
+        let currentTarget = '';
+        const emojis = ['🍎', '🍊', '🍋', '🍌', '🍉', '🍇', '🍓', '🥝', '🍑', '🥭'];
+
+        // تهيئة عند التحميل
+        window.addEventListener('DOMContentLoaded', () => {
+            if (players.length > 0) {
+                showReadyScreen();
+            }
+        });
+
+        function showReadyScreen() {
+            document.getElementById('readyEmoji').textContent = players[currentPlayerIndex].emoji;
+            document.getElementById('readyPlayerName').textContent = players[currentPlayerIndex].name;
+        }
+
+        function startPlayerTurn() {
+            AudioEngine.click();
+
+            document.getElementById('readyScreen').classList.remove('active');
+            document.getElementById('gameScreen').classList.add('active');
+
+            // تحديث HUD
+            document.getElementById('hudEmoji').textContent = players[currentPlayerIndex].emoji;
+            document.getElementById('hudName').textContent = players[currentPlayerIndex].name;
+            document.getElementById('score').textContent = '0';
+            document.getElementById('timer').textContent = '30';
+
+            // اختيار رمز هدف عشوائي
+            currentTarget = emojis[Math.floor(Math.random() * emojis.length)];
+            document.getElementById('targetEmoji').textContent = currentTarget;
+
+            // بدء اللعبة
+            gameTime = 30;
+            let turnScore = 0;
+
+            // مؤقت العد التنازلي
+            gameTimer = setInterval(() => {
+                gameTime--;
+                document.getElementById('timer').textContent = gameTime;
+
+                if (gameTime <= 5) {
+                    document.getElementById('timer').classList.add('danger');
+                } else {
+                    document.getElementById('timer').classList.remove('danger');
+                }
+
+                if (gameTime <= 0) {
+                    AudioEngine.timeUp();
+                    endPlayerTurn();
+                }
+            }, 1000);
+
+            // توليد الرموز
+            spawnTimer = setInterval(() => {
+                spawnEmoji();
+            }, 800);
+        }
+
+        function spawnEmoji() {
+            const arena = document.getElementById('arena');
+            const emoji = document.createElement('div');
+            emoji.className = 'emoji-item';
+
+            // اختيار رمز عشوائي
+            const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
+            emoji.textContent = randomEmoji;
+            emoji.dataset.isTarget = randomEmoji === currentTarget ? 'true' : 'false';
+
+            // موضع عشوائي
+            const arenaRect = arena.getBoundingClientRect();
+            emoji.style.left = Math.random() * (arenaRect.width - 60) + 'px';
+            emoji.style.top = Math.random() * (arenaRect.height - 60) + 'px';
+
+            // عند النقر
+            emoji.onclick = function () {
+                const isCorrect = this.dataset.isTarget === 'true';
+                showScorePop(isCorrect, this.offsetLeft, this.offsetTop);
+
+                if (isCorrect) {
+                    AudioEngine.correct();
+                    let turnScore = parseInt(document.getElementById('score').textContent);
+                    turnScore += 5;
+                    document.getElementById('score').textContent = turnScore;
+                } else {
+                    AudioEngine.wrong();
+                }
+
+                this.remove();
+            };
+
+            arena.appendChild(emoji);
+
+            // إزالة الرمز بعد 3 ثوانٍ
+            setTimeout(() => {
+                if (emoji.parentNode) {
+                    emoji.remove();
+                }
+            }, 3000);
+        }
+
+        function showScorePop(isCorrect, x, y) {
+            const pop = document.createElement('div');
+            pop.className = 'score-pop ' + (isCorrect ? 'correct' : 'wrong');
+            pop.textContent = isCorrect ? '+5' : '❌';
+            pop.style.left = x + 'px';
+            pop.style.top = y + 'px';
+
+            document.getElementById('arena').appendChild(pop);
+
+            setTimeout(() => pop.remove(), 800);
+        }
+
+        function endPlayerTurn() {
+            clearInterval(gameTimer);
+            clearInterval(spawnTimer);
+
+            // تحديث نقاط اللاعب
+            const stageScore = parseInt(document.getElementById('score').textContent);
+            players[currentPlayerIndex].stage2Score = stageScore;
+            players[currentPlayerIndex].score += stageScore;
+
+            // مسح الساحة
+            document.getElementById('arena').innerHTML = '';
+
+            // الانتقال للاعب التالي أو النتائج
+            currentPlayerIndex++;
+
+            if (currentPlayerIndex < players.length) {
+                setTimeout(() => {
+                    document.getElementById('gameScreen').classList.remove('active');
+                    document.getElementById('readyScreen').classList.add('active');
+                    showReadyScreen();
+                }, 1500);
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            setTimeout(() => {
+                document.getElementById('gameScreen').classList.remove('active');
+                document.getElementById('resultsScreen').classList.add('active');
+
+                // ترتيب اللاعبين
+                const sortedPlayers = [...players].sort((a, b) => b.score - a.score);
+
+                // أفضل لاعبين يتأهلان
+                const qualifiedCount = Math.min(2, sortedPlayers.length);
+                const qualifiedPlayers = sortedPlayers.slice(0, qualifiedCount);
+
+                // عرض النتائج
+                const resultsList = document.getElementById('resultsList');
+                resultsList.innerHTML = '';
+
+                sortedPlayers.forEach((player, index) => {
+                    const isQualified = index < qualifiedCount;
+                    const item = document.createElement('div');
+                    item.className = 'player-result ' + (isQualified ? 'qualified' : 'eliminated');
+                    item.innerHTML = `
+                        <div class="player-result-left">
+                            <span class="p-emoji">${player.emoji}</span>
+                            <span class="p-name">${player.name}</span>
+                            ${isQualified ? '<span class="qualified-badge">✅ متأهل</span>' : ''}
+                        </div>
+                        <span class="p-score">${player.score} نقطة</span>
+                    `;
+                    resultsList.appendChild(item);
+                });
+
+                // حفظ اللاعبين المتأهلين
+                players = qualifiedPlayers;
+                localStorage.setItem('competitionPlayers', JSON.stringify(players));
+                localStorage.setItem('currentStage', '3');
+            }, 1500);
+        }
+
+        function goToFinalStage() {
+            AudioEngine.click();
+
+            // حفظ بيانات اللاعبين المتأهلين
+            localStorage.setItem('competitionPlayers', JSON.stringify(players));
+            localStorage.setItem('currentStage', '3');
+
+            // الانتقال للمرحلة النهائية
+            window.location.href = 'competition-stage3.html';
+        }
+    </script>
+</body>
+
+</html>
